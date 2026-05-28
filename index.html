@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Layer</title>
+  <style>
+    /* ── Design tokens ────────────────────────────────────────── */
+    :root {
+      --bg-page:        #f5f4ef;
+      --bg-card:        #ffffff;
+      --border:         #e5e3dc;
+      --border-hover:   #c9c6bc;
+
+      --text-primary:   #1a1916;
+      --text-secondary: #6b6860;
+      --text-tag:       #5c5b58;
+
+      --tag-bg:         #eeece6;
+      --tag-bg-hover:   #e3e0d8;
+
+      --accent:         #c17f3e;
+      --accent-light:   #fdf3e7;
+
+      --radius-card:    12px;
+      --radius-tag:     6px;
+
+      --shadow-card:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-hover:   0 4px 12px rgba(0,0,0,.09), 0 2px 4px rgba(0,0,0,.05);
+
+      --font:           -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter",
+                        Helvetica, Arial, sans-serif;
+    }
+
+    /* ── Reset & base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    /* ── Page header ──────────────────────────────────────────── */
+    .page-header {
+      max-width: 900px;
+      margin: 0 auto 40px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+
+    .page-header p {
+      margin-top: 6px;
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Grid ─────────────────────────────────────────────────── */
+    .card-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, auto);
+      gap: 16px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 180ms ease, box-shadow 180ms ease,
+                  transform 180ms ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ── Card — title ─────────────────────────────────────────── */
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: -0.1px;
+      color: var(--text-primary);
+    }
+
+    /* ── Card — description ───────────────────────────────────── */
+    .card-description {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    /* ── Card — tags ──────────────────────────────────────────── */
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tag);
+      background: var(--tag-bg);
+      border-radius: var(--radius-tag);
+      padding: 3px 9px;
+      transition: background 150ms ease;
+    }
+
+    .tag:hover {
+      background: var(--tag-bg-hover);
+    }
+
+    .tag.accent {
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Memory Layer</h1>
+    <p>Stored context and knowledge available to your conversations.</p>
+  </header>
+
+  <main class="card-grid">
+
+    <article class="card">
+      <h2 class="card-title">Conversation History</h2>
+      <p class="card-description">
+        A rolling transcript of recent exchanges, summarised and indexed for
+        fast retrieval during future sessions.
+      </p>
+      <div class="card-tags">
+        <span class="tag accent">Active</span>
+        <span class="tag">Retrieval</span>
+        <span class="tag">NLP</span>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2 class="card-title">User Preferences</h2>
+      <p class="card-description">
+        Explicit and inferred preferences — tone, verbosity, domains of
+        interest — that shape how responses are tailored over time.
+      </p>
+      <div class="card-tags">
+        <span class="tag accent">Active</span>
+        <span class="tag">Personalisation</span>
+        <span class="tag">Profile</span>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2 class="card-title">Project Context</h2>
+      <p class="card-description">
+        Repository metadata, architecture notes, and open tasks that keep
+        the assistant grounded in the specifics of your current work.
+      </p>
+      <div class="card-tags">
+        <span class="tag">Engineering</span>
+        <span class="tag">Code</span>
+        <span class="tag">Context</span>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2 class="card-title">Knowledge Snippets</h2>
+      <p class="card-description">
+        Curated facts, definitions, and domain knowledge you've explicitly
+        saved for the assistant to reference in future interactions.
+      </p>
+      <div class="card-tags">
+        <span class="tag">Knowledge</span>
+        <span class="tag">Reference</span>
+        <span class="tag">Manual</span>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2 class="card-title">Temporal Anchors</h2>
+      <p class="card-description">
+        Key dates, deadlines, and recurring events that help the assistant
+        reason accurately about time-sensitive tasks and reminders.
+      </p>
+      <div class="card-tags">
+        <span class="tag">Scheduling</span>
+        <span class="tag">Time</span>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2 class="card-title">Semantic Index</h2>
+      <p class="card-description">
+        A vector-based index of all stored memories, enabling similarity
+        search and relevance ranking at query time.
+      </p>
+      <div class="card-tags">
+        <span class="tag">Embeddings</span>
+        <span class="tag">Search</span>
+        <span class="tag">Infrastructure</span>
+      </div>
+    </article>
+
+  </main>
+
+</body>
+</html>
