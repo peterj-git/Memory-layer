@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stored Memories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F1EB;
+    --bg-2: #EBE7DD;
+    --panel: #FFFFFF;
+    --ink: #1C1B17;
+    --ink-2: #57544C;
+    --ink-3: #8C8779;
+    --ink-4: #B5AF9E;
+    --line: #E5E0D2;
+    --line-2: #D9D2BF;
+    --accent: #9B4F2C;
+    --accent-ink: #2F1B10;
+    --tag-bg: #F0EBDD;
+    --tag-bg-hover: #E7E1D0;
+
+    --r-card: 14px;
+    --r-tag: 999px;
+
+    --shadow-1: 0 1px 0 rgba(28,27,23,0.04), 0 1px 2px rgba(28,27,23,0.04);
+    --shadow-2: 0 12px 32px -12px rgba(28,27,23,0.18), 0 4px 12px -4px rgba(28,27,23,0.08);
+    --shadow-modal: 0 40px 80px -20px rgba(28,27,23,0.35), 0 12px 32px -8px rgba(28,27,23,0.18);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 56px 40px 120px;
+  }
+
+  /* ---------- Header ---------- */
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 28px;
+  }
+  .head-l { min-width: 0; }
+  .crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .crumb .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .crumb-sep { color: var(--ink-4); margin: 0 4px; }
+  .crumb-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-2);
+  }
+  .crumb-pulse {
+    position: relative;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4FA37A;
+    box-shadow: 0 0 0 3px rgba(79,163,122,0.18);
+    display: inline-block;
+  }
+  .crumb-pulse::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.2px solid rgba(79,163,122,0.6);
+    animation: pulse 2.2s ease-out infinite;
+  }
+  .crumb-status .ping { color: var(--ink-3); }
+  h1.title {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    font-size: 56px;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--ink);
+  }
+  h1.title em { font-style: italic; color: var(--ink-2); font-weight: 400; }
+  .sub {
+    margin-top: 14px;
+    color: var(--ink-2);
+    font-size: 15px;
+    max-width: 56ch;
+    line-height: 1.5;
+  }
+
+  .head-r {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .stat {
+    text-align: right;
+    font-family: "Newsreader", Georgia, serif;
+    color: var(--ink);
+  }
+  .stat .n {
+    font-size: 48px;
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .stat .lab {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    margin-top: 6px;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 32px;
+  }
+  .tabs { display: flex; gap: 2px; }
+  .tab {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color .15s, background .15s;
+  }
+  .tab:hover { color: var(--ink); background: rgba(28,27,23,0.04); }
+  .tab.active { color: var(--ink); background: rgba(28,27,23,0.06); }
+  .tab svg { width: 14px; height: 14px; }
+  .tab .count {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    background: var(--tag-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .tab.active .count { background: rgba(28,27,23,0.08); color: var(--ink-2); }
+
+  .tool-r { display: flex; align-items: center; gap: 12px; }
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 12px;
+    width: 280px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .search:focus-within { border-color: var(--line-2); box-shadow: 0 0 0 4px rgba(155,79,44,0.08); }
+  .search svg { width: 14px; height: 14px; color: var(--ink-3); flex-shrink: 0; }
+  .search input {
+    border: 0;
+    background: transparent;
+    outline: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    width: 100%;
+  }
+  .search input::placeholder { color: var(--ink-3); }
+  .kbd {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  .sort {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--ink-2);
+    cursor: pointer;
+    padding: 7px 10px;
+    border-radius: 8px;
+  }
+  .sort:hover { background: rgba(28,27,23,0.04); color: var(--ink); }
+  .sort svg { width: 14px; height: 14px; }
+
+  /* ---------- Layout (sidebar + main) ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; gap: 28px; }
+  }
+  .main { min-width: 0; }
+
+  /* ---------- Sidebar ---------- */
+  .side { display: flex; flex-direction: column; gap: 28px; position: sticky; top: 32px; }
+  @media (max-width: 980px) { .side { position: static; } }
+  .side-section h4 {
+    margin: 0 0 12px;
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .side-section h4 svg { width: 16px; height: 16px; color: var(--accent); }
+
+  .status-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    padding: 26px 18px 22px;
+    box-shadow: var(--shadow-1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .status-dot-wrap {
+    position: relative;
+    width: 14px; height: 14px;
+    margin: 0 auto 14px;
+  }
+  .status-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #4FA37A;
+    box-shadow: 0 0 0 5px rgba(79,163,122,0.16);
+    position: relative;
+    z-index: 2;
+  }
+  .status-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(79,163,122,0.6);
+    animation: pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+  .status-label {
+    font-family: "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .status-sub {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-tile {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 12px 14px;
+    box-shadow: var(--shadow-1);
+    text-align: center;
+    transition: border-color .15s, transform .15s;
+  }
+  .stat-tile:hover { border-color: var(--line-2); transform: translateY(-1px); }
+  .stat-tile.wide { grid-column: span 2; }
+  .stat-tile .v {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .stat-tile.zero .v { color: var(--ink-4); }
+  .stat-tile .l {
+    margin-top: 8px;
+    font-family: "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px;
+    color: var(--ink-3);
+  }
+  .stat-tile .delta {
+    margin-top: 5px;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-family: "JetBrains Mono", monospace;
+  }
+  .stat-tile .delta.up { color: #4FA37A; }
+
+  /* ---------- Grid ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 22px;
+  }
+  @media (min-width: 1100px) {
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-1);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s, border-color .15s;
+    position: relative;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
+    border-color: var(--line-2);
+  }
+  .card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Cover ---------- */
+  .cover {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--cover-bg, #EFEBDF);
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .cover-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.55;
+  }
+  .cover-meta {
+    position: absolute;
+    inset: 14px 14px auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    z-index: 2;
+  }
+  .type-pill {
+    background: rgba(28,27,23,0.78);
+    color: #F6F1E4;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 3px 7px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+  .cover-corner {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    right: 14px;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .source {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    color: var(--cover-ink, #4A4538);
+    background: rgba(255,253,247,0.7);
+    padding: 3px 7px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+    max-width: 75%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Cover content variants */
+  .cover-art {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---------- Card body ---------- */
+  .body {
+    padding: 22px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    flex: 1;
+  }
+  .body-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .mem-id { color: var(--ink-2); font-weight: 500; }
+  .file-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 2px;
+  }
+  .type-pill.solid {
+    background: var(--tag-bg);
+    color: var(--ink-2);
+    backdrop-filter: none;
+    flex-shrink: 0;
+  }
+  .file-name {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .body h3 {
+    margin: 0;
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.22;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--tag-bg);
+    color: var(--ink-2);
+    border-radius: var(--r-tag);
+    padding: 3px 9px 3px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .tag .swatch {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--swatch, var(--ink-3));
+  }
+  .tag-more {
+    color: var(--ink-3);
+    font-size: 12px;
+    padding: 3px 4px;
+  }
+
+  /* ---------- Empty state ---------- */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--ink-3);
+    border: 1px dashed var(--line-2);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.4);
+  }
+  .empty h4 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 22px;
+    margin: 0 0 6px;
+  }
+
+  /* ---------- Modal ---------- */
+  .scrim {
+    position: fixed; inset: 0;
+    background: rgba(28,27,23,0.42);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    z-index: 50;
+    animation: fade-in .18s ease;
+  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--panel);
+    border-radius: 18px;
+    width: min(880px, 100%);
+    max-height: calc(100vh - 64px);
+    overflow: hidden;
+    box-shadow: var(--shadow-modal);
+    display: flex;
+    flex-direction: column;
+    animation: slide-up .26s cubic-bezier(.2,.7,.2,1);
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-cover {
+    position: relative;
+    aspect-ratio: 16/7;
+    background: var(--cover-bg, #EFEBDF);
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    appearance: none;
+    border: 0;
+    background: rgba(28,27,23,0.78);
+    color: #F6F1E4;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: var(--accent-ink); }
+  .modal-close svg { width: 14px; height: 14px; }
+  .modal-body {
+    padding: 28px 36px 32px;
+    overflow-y: auto;
+  }
+  .modal-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .modal h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0 0 14px;
+    color: var(--ink);
+  }
+  .modal .desc-lg {
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0 0 24px;
+    font-style: italic;
+    border-left: 2px solid var(--line-2);
+    padding-left: 16px;
+  }
+  .props {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 10px 20px;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+  .prop-k {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    padding-top: 3px;
+  }
+  .prop-v {
+    color: var(--ink);
+    font-size: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .prop-v.mono { font-family: "JetBrains Mono", monospace; font-size: 13px; }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--line-2);
+    background: var(--panel);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all .15s;
+  }
+  .btn:hover { background: var(--bg-2); }
+  .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .btn svg { width: 13px; height: 13px; }
+
+  @media (max-width: 740px) {
+    .app { padding: 32px 20px 80px; }
+    h1.title { font-size: 40px; }
+    .head { flex-direction: column; align-items: flex-start; }
+    .head-r { align-items: flex-start; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search { width: 100%; }
+    .modal-body { padding: 22px 22px 26px; }
+    .props { grid-template-columns: 1fr; gap: 4px; }
+    .prop-k { padding-top: 12px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" data-presets="react">
+
+const { useState, useMemo, useEffect, useRef } = React;
+
+/* ===================== DATA ===================== */
+
+const MEMORIES = [
+  {
+    id: 4,
+    title: "Gemini Enterprise — deployment & adoption playbook",
+    description: "This is a title slide for the 'Gemini Enterprise Deployment and adoption playbook' by Google Cloud.",
+    source: "Screenshot 2026-05-19 at 08.47.47.png",
+    kind: "image",
+    ext: "PNG",
+    date: "2026-05-21T16:54",
+    tags: ["Google Cloud", "Gemini Enterprise", "Technology Adoption", "Software Deployment", "Deployment and adoption playbook"],
+    cover: "slide",
+  },
+  {
+    id: 3,
+    title: "Invoice INV-47368 — Sinch Sweden AB",
+    description: "An invoice for 74,948.16 EUR issued by Micro Ocean Technologies to Sinch Sweden AB for SMS services in April 2026.",
+    source: "0EUR_INV-47368 (SINCH SWEDEN AB).pdf",
+    kind: "pdf",
+    ext: "PDF",
+    date: "2026-05-19T12:58",
+    tags: ["Invoice", "Billing", "Telecommunications", "Payment", "Micro Ocean Technologies Sdn. Bhd.", "Sinch Sweden AB", "Max Wang", "Joakim Boalt", "Bob Neo"],
+    cover: "invoice",
+  },
+  {
+    id: 2,
+    title: "Albert Camus — biographical note",
+    description: "Albert Camus was a prominent 20th-century French philosopher, writer, and political activist known for his work in absurdism and his involvement in the French Resistance.",
+    source: "Albert_Camus_Doc.pdf",
+    kind: "pdf",
+    ext: "PDF",
+    date: "2026-05-18T16:51",
+    tags: ["Philosophy", "Literature", "History", "Politics", "Albert Camus", "University of Algiers", "Jean Grenier", "Simone Hié", "Francine Faure"],
+    cover: "doc",
+  },
+  {
+    id: 1,
+    title: "Musée de l'Orangerie — Paris map snippet",
+    description: "A map snippet of Paris showing the location of the Musée de l'Orangerie within the Jardin des Tuileries near the Seine.",
+    source: "map-document.png",
+    kind: "image",
+    ext: "PNG",
+    date: "2026-05-18T16:50",
+    tags: ["Map", "Paris", "Museums", "Geography", "Musée de l'Orangerie", "Jardin des Tuileries", "Seine", "Place de la Concorde"],
+    cover: "map",
+  },
+];
+
+/* ===================== TAG COLORS ===================== */
+// Stable hue per tag via string hash → muted oklch swatches
+function hashHue(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h) % 360;
+}
+function tagColor(tag) {
+  const h = hashHue(tag.toLowerCase());
+  return `oklch(0.65 0.08 ${h})`;
+}
+
+/* ===================== COVER ART ===================== */
+
+const COVER_PALETTE = {
+  slide:   { bg: "#E8E0CC", ink: "#5A4A2C", stripe: "#D9CEB2", accent: "#9C5B3C" },
+  invoice: { bg: "#DDE5D8", ink: "#3D4E36", stripe: "#CDD7C6", accent: "#587044" },
+  doc:     { bg: "#E2DDE8", ink: "#403957", stripe: "#D2CCDB", accent: "#5C4F86" },
+  map:     { bg: "#D6DEE2", ink: "#34464F", stripe: "#C6CFD4", accent: "#436173" },
+};
+
+function StripedBg({ palette }) {
+  return (
+    <svg className="cover-pattern" preserveAspectRatio="none" viewBox="0 0 400 225" aria-hidden="true">
+      <defs>
+        <pattern id="stripes" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="14" height="14" fill={palette.bg} />
+          <line x1="0" y1="0" x2="0" y2="14" stroke={palette.stripe} strokeWidth="6" />
+        </pattern>
+      </defs>
+      <rect width="400" height="225" fill="url(#stripes)" />
+    </svg>
+  );
+}
+
+function SlideCover({ palette }) {
+  return (
+    <div className="cover-art">
+      <svg viewBox="0 0 320 180" width="62%" aria-hidden="true">
+        <rect x="0" y="0" width="320" height="180" rx="8" fill={palette.bg} stroke={palette.ink} strokeOpacity="0.15"/>
+        <rect x="22" y="26" width="120" height="10" rx="2" fill={palette.ink} opacity="0.85"/>
+        <rect x="22" y="44" width="80" height="6" rx="2" fill={palette.ink} opacity="0.35"/>
+        <rect x="22" y="78" width="200" height="6" rx="2" fill={palette.ink} opacity="0.55"/>
+        <rect x="22" y="92" width="240" height="6" rx="2" fill={palette.ink} opacity="0.55"/>
+        <rect x="22" y="106" width="170" height="6" rx="2" fill={palette.ink} opacity="0.55"/>
+        <circle cx="270" cy="140" r="14" fill={palette.accent} opacity="0.85"/>
+        <rect x="22" y="138" width="60" height="8" rx="2" fill={palette.ink} opacity="0.45"/>
+      </svg>
+    </div>
+  );
+}
+
+function InvoiceCover({ palette }) {
+  return (
+    <div className="cover-art">
+      <svg viewBox="0 0 240 200" width="46%" aria-hidden="true">
+        <rect x="0" y="0" width="240" height="200" rx="6" fill="#FCFAF3" stroke={palette.ink} strokeOpacity="0.18"/>
+        <rect x="0" y="0" width="240" height="36" fill={palette.accent} opacity="0.9"/>
+        <rect x="16" y="14" width="86" height="8" rx="1.5" fill="#FCFAF3" opacity="0.95"/>
+        <rect x="16" y="58" width="60" height="5" rx="1" fill={palette.ink} opacity="0.5"/>
+        <rect x="16" y="68" width="100" height="5" rx="1" fill={palette.ink} opacity="0.3"/>
+        {[0,1,2,3].map(i => (
+          <g key={i}>
+            <rect x="16" y={94 + i*18} width="120" height="4" rx="1" fill={palette.ink} opacity="0.45"/>
+            <rect x="180" y={94 + i*18} width="44" height="4" rx="1" fill={palette.ink} opacity="0.55"/>
+          </g>
+        ))}
+        <line x1="16" y1="172" x2="224" y2="172" stroke={palette.ink} strokeOpacity="0.25"/>
+        <rect x="150" y="180" width="74" height="8" rx="1.5" fill={palette.ink} opacity="0.85"/>
+      </svg>
+    </div>
+  );
+}
+
+function DocCover({ palette }) {
+  return (
+    <div className="cover-art">
+      <svg viewBox="0 0 220 200" width="42%" aria-hidden="true">
+        <rect x="0" y="0" width="220" height="200" rx="6" fill="#FCFAF3" stroke={palette.ink} strokeOpacity="0.18"/>
+        <rect x="18" y="22" width="120" height="11" rx="2" fill={palette.ink} opacity="0.85"/>
+        <rect x="18" y="40" width="60" height="5" rx="1" fill={palette.ink} opacity="0.4"/>
+        {Array.from({length: 9}).map((_, i) => {
+          const widths = [180,166,184,172,176,160,182,150,140];
+          return <rect key={i} x="18" y={64 + i*14} width={widths[i]} height="5" rx="1" fill={palette.ink} opacity="0.45"/>;
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function MapCover({ palette }) {
+  return (
+    <div className="cover-art">
+      <svg viewBox="0 0 320 180" width="78%" aria-hidden="true">
+        <rect x="0" y="0" width="320" height="180" fill={palette.bg} />
+        {/* grid streets */}
+        <g stroke={palette.ink} strokeOpacity="0.18" strokeWidth="1">
+          {Array.from({length: 7}).map((_,i) => <line key={'v'+i} x1={40 + i*40} y1="0" x2={40 + i*40} y2="180" />)}
+          {Array.from({length: 5}).map((_,i) => <line key={'h'+i} x1="0" y1={30 + i*30} x2="320" y2={30 + i*30} />)}
+        </g>
+        {/* park block */}
+        <rect x="120" y="60" width="120" height="40" fill={palette.accent} opacity="0.18" stroke={palette.accent} strokeOpacity="0.5" strokeDasharray="3 3"/>
+        {/* river */}
+        <path d="M -10 130 Q 80 110 160 132 T 330 124" fill="none" stroke="#7AA4B8" strokeWidth="10" opacity="0.55" strokeLinecap="round"/>
+        <path d="M -10 130 Q 80 110 160 132 T 330 124" fill="none" stroke="#A8C3D2" strokeWidth="2" opacity="0.7"/>
+        {/* marker */}
+        <g transform="translate(178 78)">
+          <circle r="10" fill={palette.accent} opacity="0.25"/>
+          <circle r="5" fill={palette.accent}/>
+          <circle r="2" fill="#FCFAF3"/>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function Cover({ kind }) {
+  const palette = COVER_PALETTE[kind];
+  let art = null;
+  if (kind === "slide") art = <SlideCover palette={palette} />;
+  if (kind === "invoice") art = <InvoiceCover palette={palette} />;
+  if (kind === "doc") art = <DocCover palette={palette} />;
+  if (kind === "map") art = <MapCover palette={palette} />;
+  return (
+    <>
+      <StripedBg palette={palette} />
+      {art}
+    </>
+  );
+}
+
+/* ===================== ICONS ===================== */
+const Icon = {
+  grid: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>,
+  list: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="3" y1="4" x2="13" y2="4"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="12" x2="13" y2="12"/></svg>,
+  table: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="12" height="10" rx="1"/><line x1="2" y1="7" x2="14" y2="7"/><line x1="8" y1="3" x2="8" y2="13"/></svg>,
+  search: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="13.5" y2="13.5"/></svg>,
+  sort: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 6l3-3 3 3"/><path d="M12 10l-3 3-3-3"/></svg>,
+  close: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>,
+  open:  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 3h4v4"/><path d="M13 3l-6 6"/><path d="M11 9v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3"/></svg>,
+  download: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 3v8"/><path d="M5 8l3 3 3-3"/><path d="M3 13h10"/></svg>,
+  gear: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v1.8M8 12.7v1.8M14.5 8h-1.8M3.3 8H1.5M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3M12.6 12.6l-1.3-1.3M4.7 4.7L3.4 3.4"/></svg>,
+  chart: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="2" y="9" width="3" height="5" rx="0.5"/><rect x="6.5" y="5" width="3" height="9" rx="0.5"/><rect x="11" y="2" width="3" height="12" rx="0.5"/></svg>,
+};
+
+/* ===================== HELPERS ===================== */
+function formatDate(iso) {
+  const d = new Date(iso);
+  const opts = { month: "short", day: "numeric", year: "numeric" };
+  return d.toLocaleDateString("en-US", opts);
+}
+function formatTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+function relativeDate(iso) {
+  const now = new Date("2026-05-22T00:00:00");
+  const d = new Date(iso);
+  const days = Math.floor((now - d) / 86400000);
+  if (days === 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days/7)}w ago`;
+  return formatDate(iso);
+}
+
+/* ===================== CARD ===================== */
+function MemoryCard({ m, onOpen }) {
+  return (
+    <article
+      className="card"
+      tabIndex="0"
+      onClick={() => onOpen(m)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(m); } }}
+      aria-label={`Memory ${m.id}: ${m.title}`}
+    >
+      <div className="body">
+        <div className="body-top">
+          <span className="mem-id">Memory · #{String(m.id).padStart(2, "0")}</span>
+          <span>{relativeDate(m.date)}</span>
+        </div>
+        <h3>{m.title}</h3>
+        <p className="desc">{m.description}</p>
+        <div className="file-row">
+          <span className="type-pill solid">{m.ext}</span>
+          <span className="file-name" title={m.source}>{m.source}</span>
+        </div>
+        <div className="tags">
+          {m.tags.slice(0, 4).map((t) => (
+            <span className="tag" key={t} style={{ "--swatch": tagColor(t) }}>
+              <span className="swatch"></span>{t}
+            </span>
+          ))}
+          {m.tags.length > 4 && <span className="tag-more">+{m.tags.length - 4} more</span>}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/* ===================== MODAL ===================== */
+function MemoryModal({ m, onClose }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+  if (!m) return null;
+  return (
+    <div className="scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal" ref={ref} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div className="modal-cover" style={{ "--cover-bg": COVER_PALETTE[m.cover].bg, "--cover-ink": COVER_PALETTE[m.cover].ink }}>
+          <Cover kind={m.cover} />
+          <div className="cover-meta">
+            <span style={{flex:1}}></span>
+            <span className="type-pill">{m.ext}</span>
+          </div>
+          <div className="cover-corner">
+            <span className="source">{m.source}</span>
+          </div>
+          <button className="modal-close" onClick={onClose} aria-label="Close">{Icon.close}</button>
+        </div>
+        <div className="modal-body">
+          <div className="modal-eyebrow">
+            <span style={{color: "var(--accent)", fontWeight:600}}>Memory · #{String(m.id).padStart(2, "0")}</span>
+            <span>·</span>
+            <span>Captured {formatDate(m.date)} at {formatTime(m.date)}</span>
+          </div>
+          <h2 id="modal-title">{m.title}</h2>
+          <p className="desc-lg">"{m.description}"</p>
+          <div className="props">
+            <div className="prop-k">Source</div>
+            <div className="prop-v mono">{m.source}</div>
+            <div className="prop-k">Type</div>
+            <div className="prop-v">{m.kind === "pdf" ? "PDF document" : "Image"} · <span style={{color:"var(--ink-3)"}}>{m.ext}</span></div>
+            <div className="prop-k">Captured</div>
+            <div className="prop-v mono">{m.date.replace("T", " · ")}</div>
+            <div className="prop-k">Tags ({m.tags.length})</div>
+            <div className="prop-v">
+              {m.tags.map((t) => (
+                <span className="tag" key={t} style={{ "--swatch": tagColor(t) }}>
+                  <span className="swatch"></span>{t}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="modal-actions">
+            <button className="btn primary">{Icon.open}Open source</button>
+            <button className="btn">{Icon.download}Download</button>
+            <span style={{flex:1}}></span>
+            <button className="btn" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===================== APP ===================== */
+function App() {
+  const [query, setQuery] = useState("");
+  const [activeTags] = useState(new Set());
+  const [open, setOpen] = useState(null);
+  const [view, setView] = useState("gallery");
+
+  const stats = {
+    memories: MEMORIES.length,
+    pending: 4,
+    consolidations: 0,
+  };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return MEMORIES.filter((m) => {
+      const hay = (m.title + " " + m.description + " " + m.tags.join(" ") + " " + m.source).toLowerCase();
+      if (q && !hay.includes(q)) return false;
+      if (activeTags.size > 0) {
+        for (const t of activeTags) if (!m.tags.includes(t)) return false;
+      }
+      return true;
+    });
+  }, [query, activeTags]);
+
+  return (
+    <div className="app">
+      <header className="head">
+        <div className="head-l">
+          <div className="crumb">
+            <span>Agent · memory layer</span>
+            <span className="crumb-sep">—</span>
+            <span className="crumb-status">
+              <span className="crumb-pulse"></span>
+              <span>Online</span>
+              <span className="ping">· last ping 12s ago</span>
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <div className="layout">
+        <aside className="side">
+          <section className="side-section">
+            <h4>
+              {Icon.chart}
+              Memory Stats
+            </h4>
+            <div className="stats-grid">
+              <div className="stat-tile">
+                <div className="v">{String(stats.memories).padStart(2, "0")}</div>
+                <div className="l">Memories</div>
+                <div className="delta up">+2 this week</div>
+              </div>
+              <div className="stat-tile">
+                <div className="v">{String(stats.pending).padStart(2, "0")}</div>
+                <div className="l">Pending</div>
+                <div className="delta">awaiting review</div>
+              </div>
+              <div className="stat-tile wide zero">
+                <div className="v">{String(stats.consolidations).padStart(2, "0")}</div>
+                <div className="l">Consolidations</div>
+                <div className="delta">none scheduled</div>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <div className="main">
+          <div className="toolbar" style={{display:"none"}}>
+            <div className="tabs">
+              <button className={"tab " + (view === "gallery" ? "active" : "")} onClick={() => setView("gallery")}>
+                {Icon.grid} Gallery <span className="count">{MEMORIES.length}</span>
+              </button>
+              <button className={"tab " + (view === "list" ? "active" : "")} onClick={() => setView("list")}>
+                {Icon.list} List
+              </button>
+              <button className={"tab " + (view === "table" ? "active" : "")} onClick={() => setView("table")}>
+                {Icon.table} Table
+              </button>
+            </div>
+            <div className="tool-r">
+              <div className="search">
+                {Icon.search}
+                <input
+                  placeholder="Search memories, tags, sources…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                <span className="kbd">⌘K</span>
+              </div>
+              <button className="sort">{Icon.sort} Newest first</button>
+            </div>
+          </div>
+
+          <div className="grid">
+            {filtered.length === 0 && (
+              <div className="empty">
+                <h4>No memories match</h4>
+                <p>Try clearing filters or adjusting your search.</p>
+              </div>
+            )}
+            {filtered.map((m) => <MemoryCard key={m.id} m={m} onOpen={setOpen} />)}
+          </div>
+        </div>
+      </div>
+
+      {open && <MemoryModal m={open} onClose={() => setOpen(null)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+</body>
+</html>
